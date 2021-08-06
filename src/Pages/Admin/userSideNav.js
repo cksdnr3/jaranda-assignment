@@ -36,7 +36,7 @@ const ClickedBtn = styled.button`
     `}
 `;
 
-function UserSideNav({ onClickFilter, filterNumber }) {
+function UserSideNav({ onClickFilter, filterNumber, USER_FILTER }) {
   return (
     <Container>
       {USER_FILTER.map((filter, index) => (
@@ -56,13 +56,3 @@ function UserSideNav({ onClickFilter, filterNumber }) {
 }
 
 export default UserSideNav;
-
-const USER_FILTER = [
-  { title: '전체 사용자', role: 100 },
-  { title: '일반 사용자', role: 0 },
-  { title: '프론트엔드', role: 11 },
-  { title: '백엔드', role: 12 },
-  { title: '서버', role: 13 },
-  { title: '고객지원', role: 21 },
-  { title: '인사관리', role: 22 },
-];

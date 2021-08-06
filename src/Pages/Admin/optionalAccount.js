@@ -92,7 +92,7 @@ const OptionalAccount = ({ lastId, setUserList, show, toggle }) => {
       address: '',
       cardNumber: '',
       password: password.value,
-      role,
+      role: parseInt(role),
       isAdmin: 0,
     };
 

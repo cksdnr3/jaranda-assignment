@@ -87,7 +87,8 @@ const Input = styled.input``;
 function Admin() {
   const [users] = useState(userListData.load());
   const [user] = useState(userStorage.load());
-  const [filterNumber, setFilterNumber] = useState(100);
+
+  const [filterNumber, setFilterNumber] = useState(0);
 
   const [userList, setUserList] = useState(users);
   const [isModal, setIsModal] = useState(false);
@@ -97,7 +98,7 @@ function Admin() {
   const search = useInput('');
 
   const [pageable, setPageable] = useState(
-    userListData.findAllByUsername(page, limit, search.value),
+    userListData.findAllByUsername(page, limit),
   );
 
   const toggleModal = () => {
@@ -108,77 +109,89 @@ function Admin() {
     setFilterNumber(role);
   };
 
-  console.log(user);
-
   useEffect(() => {
     const { value } = search;
-    let filteredList = [...users];
+    console.log('enter');
 
-    if (value !== '' && filterNumber === 100) {
-      filteredList = filteredList.filter(el =>
-        el.userName.toLowerCase().includes(value.toLowerCase()),
-      );
-    }
-    if (filterNumber !== 100) {
-      filteredList = filteredList.filter(
-        v =>
-          v.role === filterNumber &&
-          v.userName.toLowerCase().includes(value.toLowerCase()),
-      );
-    }
-    setPageable(userListData.findAllByUsername(page, limit, value));
-    setPage(0);
-    return setUserList(filteredList);
-  }, [search.value, users, filterNumber]);
+    setPageable(
+      userListData.findAllByUsername(page, limit, value, filterNumber),
+    );
+  }, [page, userList]);
 
   useEffect(() => {
-    setPageable(userListData.findAllByUsername(page, limit));
-  }, [page, userList]);
+    console.log('serach enter');
+    const { value } = search;
+
+    setPageable(
+      userListData.findAllByUsername(page, limit, value, filterNumber),
+    );
+    setPage(0);
+  }, [search.value, filterNumber]);
+
+  useEffect(() => {
+    const { setValue } = search;
+    setValue('');
+  }, [filterNumber]);
 
   const findLastId = () => {
     return Math.max(...userList.map(v => v.id));
   };
 
-  if (!user || !user.isAdmin) {
-    return <Error />;
-  }
+  console.log(pageable);
 
   return (
-    <Container>
-      <AdminWrap>
-        <Title>사용자 관리</Title>
-        <Wrapper>
-          <UserSideNav
-            filterNumber={filterNumber}
-            onClickFilter={onClickFilter}
+    <>
+      {!user || !user.isAdmin ? (
+        <Error />
+      ) : (
+        <Container>
+          <AdminWrap>
+            <Title>사용자 관리</Title>
+            <Wrapper>
+              <UserSideNav
+                filterNumber={filterNumber}
+                onClickFilter={onClickFilter}
+                USER_FILTER={USER_FILTER}
+              />
+
+              <div>
+                <Search>
+                  <Input placeholder="전체 사용자 검색" {...search} />
+                  <button onClick={toggleModal}>
+                    <img src="images/user-add.svg" alt="추가" />
+                    사용자 추가
+                  </button>
+                  {/* <Link to={}>1페이지</Link> */}
+                </Search>
+                <UserTable
+                  pageable={pageable}
+                  setPage={setPage}
+                  page={page}
+                  setUserList={setUserList}
+                  userList={userList}
+                />
+              </div>
+            </Wrapper>
+          </AdminWrap>
+          <OptionalAccount
+            show={isModal}
+            toggle={toggleModal}
+            setUserList={setUserList}
+            lastId={findLastId() + 1}
           />
-          <div>
-            <Search>
-              <Input placeholder="전체 사용자 검색" {...search} />
-              <button onClick={toggleModal}>
-                <img src="images/user-add.svg" alt="추가" />
-                사용자 추가
-              </button>
-              {/* <Link to={}>1페이지</Link> */}
-            </Search>
-            <UserTable
-              pageable={pageable}
-              setPage={setPage}
-              page={page}
-              setUserList={setUserList}
-              userList={userList}
-            />
-          </div>
-        </Wrapper>
-      </AdminWrap>
-      <OptionalAccount
-        show={isModal}
-        toggle={toggleModal}
-        setUserList={setUserList}
-        lastId={findLastId() + 1}
-      />
-    </Container>
+        </Container>
+      )}
+    </>
   );
 }
 
 export default Admin;
+
+const USER_FILTER = [
+  { title: '일반 사용자', role: 0 },
+  { title: '프론트엔드', role: 11 },
+  { title: '백엔드', role: 12 },
+  { title: '서버', role: 13 },
+  { title: '고객지원', role: 21 },
+  { title: '인사관리', role: 22 },
+];

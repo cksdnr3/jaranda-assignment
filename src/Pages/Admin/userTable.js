@@ -111,6 +111,8 @@ const UserTable = ({ userList, setUserList, page, setPage, pageable }) => {
     setIsModal(!isModal);
   };
 
+  console.log(content);
+
   return (
     <Container>
       <Total>
