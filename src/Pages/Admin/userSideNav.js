@@ -21,7 +21,7 @@ const ClickedBtn = styled.button`
   border-bottom: 1px solid #1685fd;
 
   ${props =>
-    !props.isChosen &&
+    !props.selected &&
     css`
       color: #4a4a4a;
       border-bottom: 1px solid #f8f8f8;
@@ -36,16 +36,17 @@ const ClickedBtn = styled.button`
     `}
 `;
 
-function UserSideNav({ onClickFilter, filterNumber, USER_FILTER }) {
+function UserSideNav({ ROLES, setValue, clickFilterListener, selected }) {
   return (
     <Container>
-      {USER_FILTER.map((filter, index) => (
+      {ROLES.map((filter) => (
         <ClickedBtn
-          key={index}
-          isChosen={filter?.role === filterNumber}
-          onClick={() => {
-            console.log(filter.role);
-            onClickFilter(filter?.role);
+          key={filter.role}
+          data-name={filter.role}
+          selected={selected.includes(filter.role)}
+          onClick={(e) => {
+            clickFilterListener(e, "role");
+            setValue('');
           }}
         >
           {filter?.title}

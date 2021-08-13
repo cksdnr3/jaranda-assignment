@@ -12,8 +12,11 @@ const Button = styled.button`
   }
 `;
 
-function PageButton({ size, maxPage, page, setPage, next, prev }) {
+function PageButton({ size, maxPage, page, setPage}) {
   const [pageList, setPageList] = useState([]);
+
+  const next = page < maxPage - 1;
+  const prev = page > 0;
 
   const onPaging = page => {
     setPage(page);
@@ -21,68 +24,36 @@ function PageButton({ size, maxPage, page, setPage, next, prev }) {
 
   useEffect(() => {
     setPageList(Array.from({ length: maxPage }, (_, i) => i));
-  }, [maxPage]);
+  }, [maxPage, setPageList]);
+
+  const createButton = (start, end) => (
+    pageList.slice(start, end).map(v => (
+      <Button
+        key={v}
+        select={page === v}
+        onClick={() => onPaging(v)}
+      >
+        {v + 1}
+      </Button>
+    ))
+  )
 
   return (
     <>
-      {prev ? (
-        <Button
-          onClick={() => {
-            onPaging(page - 1);
-          }}
-        >
-          {'이전'}
-        </Button>
+      {prev
+        ? (
+        <Button onClick={() => onPaging(page - 1)}>{'이전'}</Button>
       ) : (
         <div style={{ width: '36px', display: 'inline-block' }} />
       )}
       {maxPage < size
-        ? pageList.map(v => (
-            <Button
-              key={v}
-              select={page === v}
-              onClick={() => {
-                onPaging(v);
-              }}
-            >
-              {v + 1}
-            </Button>
-          ))
+        ? createButton()
         : !(maxPage - page < size / 2 + 1)
-        ? pageList
-            .slice(
-              page - size / 2 > 0 ? page - parseInt(size / 2) : 0,
-              (page - size / 2 > 0 ? page - parseInt(size / 2) : 0) + size,
-            )
-            .map(v => (
-              <Button
-                select={page === v}
-                key={v}
-                onClick={() => {
-                  onPaging(v);
-                }}
-              >
-                {v + 1}
-              </Button>
-            ))
-        : pageList
-            .slice(maxPage - page < size / 2 + 1 && maxPage - size)
-            .map(v => (
-              <Button
-                key={v}
-                select={page === v}
-                onClick={() => {
-                  onPaging(v);
-                }}
-              >
-                {v + 1}
-              </Button>
-            ))}
-      {next ? (
-        <Button onClick={() => onPaging(page + 1)}>{'다음'}</Button>
-      ) : (
-        <></>
-      )}
+        ? createButton(page - size / 2 > 0 ? page - parseInt(size / 2) : 0,
+            (page - size / 2 > 0 ? page - parseInt(size / 2) : 0) + size)
+        : createButton(maxPage - page < size / 2 + 1 && maxPage - size)
+      }
+      {next && <Button onClick={() => onPaging(page + 1)}>{'다음'}</Button>}
     </>
   );
 }

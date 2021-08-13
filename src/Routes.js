@@ -11,11 +11,12 @@ class Routes extends React.Component {
   render() {
     return (
       <Router>
-        <Header></Header>
+        <Header/>
         <Switch>
-          <Route exact path={ROUTES_PATH.MAIN} component={Main}></Route>
-          <Route path={ROUTES_PATH.ADMIN} component={Admin}></Route>
-          <Route path={ROUTES_PATH.SIGNUP} component={Signup}></Route>
+          <Route exact path={ROUTES_PATH.MAIN} component={Main} />
+          <Route path={ROUTES_PATH.ADMIN} component={Admin}>
+          </Route>
+          <Route path={ROUTES_PATH.SIGNUP} component={Signup}/>
         </Switch>
       </Router>
     );

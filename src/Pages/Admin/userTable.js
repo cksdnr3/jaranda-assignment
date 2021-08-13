@@ -130,7 +130,7 @@ const UserTable = ({ userList, setUserList, page, setPage, pageable }) => {
           </tr>
         </THead>
         <TBody>
-          {content.map((user, idx) => (
+          {content?.map((user, idx) => (
             <User
               key={idx}
               user={user}

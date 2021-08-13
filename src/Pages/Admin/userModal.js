@@ -85,10 +85,11 @@ const UserModal = ({ show, toggleModal, user, setUserList }) => {
     setUserState({ ...userState, isAdmin: !userState.isAdmin });
   };
   const setRoleId = value => {
-    setUserState({ ...userState, role: value });
+    setUserState({ ...userState, role: parseInt(value, 10) });
   };
   const changeUserData = () => {
     userListStorage.push(userState);
+    console.log(userState)
     setUserList(prev => prev.map(v => (v.id === userState.id ? userState : v)));
     let changeData = '';
     if (userState.role !== user.role) {

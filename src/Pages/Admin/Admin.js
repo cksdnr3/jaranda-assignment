@@ -8,6 +8,164 @@ import UserSideNav from './userSideNav';
 import { userStorage } from 'store';
 import Error from 'Pages/Error/Error';
 
+function Admin() {
+  const [users] = useState(userListData.load());
+  const [user] = useState(userStorage.load());
+
+  const [userList, setUserList] = useState(users);
+  const [isModal, setIsModal] = useState(false);
+  const [pageable, setPageable] = useState({});
+  const [page, setPage] = useState(0);
+  const [limit] = useState(5);
+  const search = useInput('');
+  const [passingTags, setPassingTags] = useState({
+    search: {
+      inputTerm: "",
+    },
+    role: {
+      0: false, // 일반 회원
+      11: false, // 프론트 엔드
+      12: false, // 백 엔드
+      13: false, // 서버
+      21: false, // 고객 지원
+      22: false, // 인사 관리
+    }
+  })
+
+  const clickFilterListener = (e, filterProp) => {
+    console.log("Filter Clicked", e.target.dataset.name);
+
+    const name = parseInt(e.target.dataset.name, 10);
+    setPassingTags(prev => ({
+      ...prev,
+      [filterProp]: {
+        ...prev[filterProp],
+        [name]: !prev[filterProp][name]
+      }
+    }))
+  }
+
+  const collectTrueFilter = () => {
+    const collectedKeys = {
+      role: [],
+    }
+    const { role } = passingTags;
+    for (let roleKey in role) {
+
+      if (role[roleKey]) collectedKeys.role.push(parseInt(roleKey, 10));
+    }
+
+    return collectedKeys;
+  }
+
+  const filterMultiple = (users, filters) => {
+    const filterKeys = Object.keys(filters);
+    return users.filter(user => {
+      return filterKeys.every(key => {
+        if (!filters[key].length) return true;
+        if (Array.isArray(user[key])) {
+          return user[key].some(keyElem => filters[key].includes(keyElem));
+        }
+        return filters[key].includes(user[key]);
+      })
+    })
+  }
+
+  const searchUsers = () => {
+    const filteredUsers = filterMultiple(userList, collectTrueFilter());
+
+    return filteredUsers.filter(user => {
+      return user.userName.toLowerCase().includes(search.value)
+    });
+  }
+
+  const toggleModal = () => {
+    setIsModal(prev => !prev);
+  };
+
+  const findAll = (page, limit, items = userList) => {
+    const len = items.length;
+    const maxPage =
+      len % limit
+        ? parseInt(len / limit + 1, 10)
+        : parseInt(len / limit, 10);
+
+    const pageable = {
+      maxPage,
+      content: items.slice(page * limit, page * limit + limit),
+    };
+
+    return pageable;
+  }
+
+  useEffect(() => {
+    setPageable(
+      findAll(page, limit, searchUsers())
+    );
+  }, [search.value, page, userList]);
+
+  useEffect(() => {
+    setPageable(
+      findAll(0, limit, filterMultiple(userList, collectTrueFilter()))
+    )
+    setPage(0);
+  }, [passingTags.role])
+
+  const findLastId = () => {
+    return Math.max(...userList.map(v => v.id));
+  };
+
+  console.log(pageable)
+
+  return (
+    <>
+      {!user || !user.isAdmin ? (
+        <Error />
+      ) : (
+        <Container>
+          <AdminWrap>
+            <Title>사용자 관리</Title>
+            <Wrapper>
+              <UserSideNav
+                ROLES={ROLES}
+                selected={collectTrueFilter().role}
+                clickFilterListener={clickFilterListener}
+                {...search}
+              />
+
+              <div>
+                <Search>
+                  <Input onInput={() => setPage(0)} placeholder="전체 사용자 검색" {...search} />
+                  <button onClick={toggleModal}>
+                    <img src="images/user-add.svg" alt="추가" />
+                    사용자 추가
+                  </button>
+                  {/* <Link to={}>1페이지</Link> */}
+                </Search>
+                <UserTable
+                  pageable={pageable}
+                  setPage={setPage}
+                  page={page}
+                  setUserList={setUserList}
+                  userList={userList}
+                />
+              </div>
+            </Wrapper>
+          </AdminWrap>
+          <OptionalAccount
+            show={isModal}
+            toggle={toggleModal}
+            setUserList={setUserList}
+            lastId={findLastId() + 1}
+          />
+        </Container>
+      )}
+    </>
+  );
+}
+
+export default Admin;
+
 const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -84,110 +242,7 @@ const Search = styled.div`
 
 const Input = styled.input``;
 
-function Admin() {
-  const [users] = useState(userListData.load());
-  const [user] = useState(userStorage.load());
-
-  const [filterNumber, setFilterNumber] = useState(0);
-
-  const [userList, setUserList] = useState(users);
-  const [isModal, setIsModal] = useState(false);
-
-  const [page, setPage] = useState(0);
-  const [limit] = useState(5);
-  const search = useInput('');
-
-  const [pageable, setPageable] = useState(
-    userListData.findAllByUsername(page, limit),
-  );
-
-  const toggleModal = () => {
-    setIsModal(prev => !prev);
-  };
-
-  const onClickFilter = role => {
-    setFilterNumber(role);
-  };
-
-  useEffect(() => {
-    const { value } = search;
-    console.log('enter');
-
-    setPageable(
-      userListData.findAllByUsername(page, limit, value, filterNumber),
-    );
-  }, [page, userList]);
-
-  useEffect(() => {
-    console.log('serach enter');
-    const { value } = search;
-
-    setPageable(
-      userListData.findAllByUsername(page, limit, value, filterNumber),
-    );
-    setPage(0);
-  }, [search.value, filterNumber]);
-
-  useEffect(() => {
-    const { setValue } = search;
-    setValue('');
-  }, [filterNumber]);
-
-  const findLastId = () => {
-    return Math.max(...userList.map(v => v.id));
-  };
-
-  console.log(pageable);
-
-  return (
-    <>
-      {!user || !user.isAdmin ? (
-        <Error />
-      ) : (
-        <Container>
-          <AdminWrap>
-            <Title>사용자 관리</Title>
-            <Wrapper>
-              <UserSideNav
-                filterNumber={filterNumber}
-                onClickFilter={onClickFilter}
-                USER_FILTER={USER_FILTER}
-              />
-
-              <div>
-                <Search>
-                  <Input placeholder="전체 사용자 검색" {...search} />
-                  <button onClick={toggleModal}>
-                    <img src="images/user-add.svg" alt="추가" />
-                    사용자 추가
-                  </button>
-                  {/* <Link to={}>1페이지</Link> */}
-                </Search>
-                <UserTable
-                  pageable={pageable}
-                  setPage={setPage}
-                  page={page}
-                  setUserList={setUserList}
-                  userList={userList}
-                />
-              </div>
-            </Wrapper>
-          </AdminWrap>
-          <OptionalAccount
-            show={isModal}
-            toggle={toggleModal}
-            setUserList={setUserList}
-            lastId={findLastId() + 1}
-          />
-        </Container>
-      )}
-    </>
-  );
-}
-
-export default Admin;
-
-const USER_FILTER = [
+const ROLES = [
   { title: '일반 사용자', role: 0 },
   { title: '프론트엔드', role: 11 },
   { title: '백엔드', role: 12 },
