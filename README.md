@@ -16,7 +16,7 @@ PreOnBoading-Assignment3-Jaranda
 
 -**기술 스택**: React, styled-components, react-daum-postcode
 
--**배포 주소**: https://peaceful-wilson-9e6512.netlify.app/
+-**배포 주소**: https://stoic-roentgen-a92375.netlify.app/
 
 -**권한별 ID/PW** : admin/a(관리자), frontend/a(프론트엔드), backend/a(백엔드), server/a(서버), customservice/a(고객관리), HRresource/a(인사관리)
 
